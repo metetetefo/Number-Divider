@@ -19,29 +19,30 @@ def format_number(number):
     return number  # Otherwise return as float
 
 def precise_round(number):
-    """ Perform precise rounding based on the number's decimal precision. """
-    if number == 0:  # If the number is zero
-        return 0  # Return 0
-
-    abs_number = abs(number)  # Get the absolute value of the number
-
-    # Determine the length of the decimal part
-    decimal_part = f"{abs_number:.10f}".split('.')[1]  # Convert number to decimal format and get decimal part
-    length = len(decimal_part)  # Get the length of the decimal part
-
-    if length == 0:
-        return number  # If there's no decimal part, return the original number
-
-    # Perform rounding based on the most significant decimal place
-    rounded = round(number, length - 1)  # Round based on the most significant decimal place
-
-    # If rounding results in zero
-    if rounded == 0:
-        # If the number is extremely small, avoid returning zero
-        if abs(number) < 1e-10:
-            return 1e-10
+    """
+    Round based on the input's decimal precision:
+    - If the number has D decimal digits in its minimal decimal form, round to (D-1) decimals.
+    - Preserve the sign for extremely small values that would collapse to 0 by returning ±1e-10.
+    """
+    if number == 0:
         return 0
-    
+
+    # Build a minimal decimal string for the absolute value and count fractional digits
+    s = ("%f" % abs(number)).rstrip("0").rstrip(".")
+    if "." in s:
+        decimals = len(s.split(".")[1])
+    else:
+        decimals = 0
+
+    if decimals == 0:
+        return number
+
+    rounded = round(number, max(0, decimals - 1))
+
+    # Avoid collapsing very small values to 0; preserve sign
+    if rounded == 0:
+        return 1e-10 if number > 0 else -1e-10
+
     return rounded
 
 def division_operation():
